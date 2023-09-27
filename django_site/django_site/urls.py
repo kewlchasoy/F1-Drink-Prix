@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from register import views as r
+from invitation import views as i
 
 urlpatterns = [
-    path('register/', r.register, name="register"),
     path('', include('my_app.urls')),
     path('', include("django.contrib.auth.urls")),
+    path('register/', r.register, name="register"),
+    path('invite_user/<str:code>', i.invite_user, name='invite_user'),
 ]
