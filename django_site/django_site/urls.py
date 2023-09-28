@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('my_app.urls')),
     path('', include("django.contrib.auth.urls")),
     path('register/', r.register, name="register"),
-    path('invite_user/<str:code>', i.invite_user, name='invite_user'),
+    path('create_page/', i.create_page, name='create_page'),
+    path('group/<str:code>/', i.page, name='page'),
 ]
