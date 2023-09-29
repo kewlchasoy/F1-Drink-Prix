@@ -1,3 +1,6 @@
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import Page
@@ -5,56 +8,53 @@ import string, random
 
 
 def create_page(request):
-  if request.method == 'POST':
-    title = request.POST['title']
-    content = request.POST['content']
+    """Creates a new page with random url and permissions"""
+    if request.method == 'POST':
+        title = request.POST['title']
+        content = request.POST['content']
 
-    # Generate a random 6 letter name for the page.
-    code = ''.join(random.choice(string.ascii_lowercase) for i in range(6))
+        # Generate a random 5 letter name for the page.
+        code = ''.join(random.choice(string.ascii_lowercase) for i in range(6))
 
-    # Create a new page object and save it to the database.
-    page = Page(title=title, content=content, code=code)
-    page.save()
+        # Check if the page with the generated code already exists.
+        while Page.objects.filter(code=code).exists():
+            code = ''.join(random.choice(string.ascii_lowercase) for i in range(6))
 
-    # Redirect the user to the new page.
-    url = reverse('page', kwargs={'code': code})
-    return redirect(url)
+        # Create a new page object and save it to the database.
+        page = Page(title=title, content=content, code=code, owner=request.user)
+        page.save()
 
-  else:
-    return render(request, 'create_page.html')
+        # Create a permission for the page.
+        permission = Permission.objects.create(
+            codename='view_{}'.format(page.code),
+            name='Can view page {}'.format(page.code),
+            content_type=ContentType.objects.get_for_model(Page)
+        )
+
+        # Add the permission to the page's owner.
+        page.owner.user_permissions.add(permission)
+
+        url = reverse('page', kwargs={'code': code})
+        return redirect(url)
+    else:
+        return render(request, 'create_page')
 
 def page(request, code):
-  page = Page.objects.get(code=code)
-  return render(request, 'page.html', {'page': page})
-    
+    page = None
+    try:
+        page = Page.objects.get(code=code)
+    except Page.DoesNotExist:
+        raise Http404('Page not found.')
+
+    return render(request, 'template_page.html', {'page': page})
 
 
-# def invite_user(request, code):
-#     if request.method == 'POST':
-#         email = request.POST['email']
 
-#         # Get the page object for the given code.
-#         page = Page.objects.get(code=code)
+def group_page(request, code):
+    # Check if the user has permission to view the group page.
+    if not request.user.has_perm('view_{}'.format(code)):
+        raise PermissionDenied()
 
-#         # Send an email to the invited user.
-#         send_mail(
-#             'Invitation to page',
-#             'You have been invited to the page {}.'.format(page.title),
-#             'me@example.com',
-#             [email],
-#             fail_silently=False
-#         )
+    # ...
 
-#         # Redirect the user to the page.
-#         return redirect('page', code=code)
-
-#     else:
-#         return render(request, 'invite_user.html', {'code': code})
-
-
-# def generate_code(length = 6):
-#     characters = 'abcdefghjkmnpqrstuvwxyz23456789'
-#     code = ''
-#     for i in range(length):
-#         code += random.choice(characters)
-#     return code
+    return render(request, 'group_page.html')

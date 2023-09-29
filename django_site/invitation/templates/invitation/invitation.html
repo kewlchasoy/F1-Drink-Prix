@@ -1,15 +1,33 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-5 container d-flex align-items-center justify-content-center">
+<div class="container fw-bolder">
+    <div class="row">
+      <div class="col-12">
         <form action="/create_page/" method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" name="title" id="title" class="form-control" placeholder="Title">
+          </div>
+          <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <textarea name="content" id="content" class="form-control" placeholder="Content"></textarea>
+          </div>
+          <button type="submit" class="btn" style="background-color: #B70404;color: white;">Create Page</button>
+        </form>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <form action="/get_permission/" method="post" class="mb-3">
             {% csrf_token %}
-            {{form|crispy}}
-            <input type="text" name="title" placeholder="Title">
-            <textarea name="content" placeholder="Content"></textarea>
-            <button type="submit">Create Page</button>
+            <div class="form-group">
+              <label for="code">Page code:</label>
+              <input type="text" name="code" id="code" class="form-control" placeholder="Paste the code of the page you want permission to">
+            </div>
+            <button type="submit" class="btn" style="background-color: #B70404;color: white;">Get permission</button>
           </form>
+        </div>
     </div>
-</div>
 {% endblock %}
