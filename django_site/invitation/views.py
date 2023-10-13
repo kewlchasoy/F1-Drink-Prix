@@ -40,7 +40,6 @@ def create_page(request):
   else:
     return render(request, 'create_page')
 
-
 @login_required
 def page(request, code):
   page = get_object_or_404(Page, code=code)
@@ -66,8 +65,12 @@ def add_user(request, code):
   if request.method == 'POST':
     username = request.POST['username']
 
-  # Gets the username from the forms field and the current group for the page.
-  user_id = User.objects.get(username=username)
+  try:
+    user_id = User.objects.get(username__iexact=username)
+  except User.DoesNotExist:
+    messages.warning(request, "That user does not exist")
+    return redirect('/group/{}/'.format(page.code))
+
   group = group = Group.objects.get(name='Users of {}'.format(page.code))
 
   # Check if the user is already in the group.
