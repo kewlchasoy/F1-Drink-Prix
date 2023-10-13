@@ -1,4 +1,23 @@
-{% extends 'my_app/base.html' %} {% block content %}
+{% extends 'my_app/base.html' %}
+{% block content %}
+
 
 <h1>Edit this page in page in template_page.html</h1>
+
+  {% if page.owner == request.user %}
+  <form action="/add_user/{{ page.code }}/" method="post" class="mb-3">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" name="username" placeholder="Enter username" class="form-control">
+    </div>
+    <input type="submit" value="Add User" class="btn btn-primary">
+  </form>
+  {% endif %}
+
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
+  
 {% endblock %}
+

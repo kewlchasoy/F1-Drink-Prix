@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'crispy_forms',
     'crispy_bootstrap5',
+    'utils',
     'my_app',
     'register.apps.RegisterConfig',
     'invitation',
+    
 ]
 
 MIDDLEWARE = [
